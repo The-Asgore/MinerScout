@@ -3,6 +3,7 @@ package main
 import (
 	"MinerScout/browser"
 	"MinerScout/site"
+	"flag"
 	"fmt"
 	ui "github.com/gizak/termui/v3"
 	"log"
@@ -13,6 +14,19 @@ var errorChan = make(chan error, 100)
 var reminderChan = make(chan interface{}, 100)
 
 func main() {
+	var sliced bool
+	var slicedStart int
+	var slicedEnd int
+	flag.BoolVar(&sliced, "slice", false, "SET ture to enable csv slice")
+	flag.IntVar(&slicedStart, "start", 0, "Header of the slice")
+	flag.IntVar(&slicedEnd, "end", 0, "End of the slice")
+
+	flag.Parse()
+
+	if sliced && (slicedStart > slicedEnd || slicedStart < 0 || slicedEnd < 0) {
+		log.Fatalln("wrong args")
+	}
+
 	var miningPoolCount = map[string]float64{
 		"CoinHive":     0,
 		"CrypotoNoter": 0,
@@ -47,7 +61,7 @@ func main() {
 	}
 	uiEvent := ui.PollEvents()
 
-	siteChan, sitesNum := site.GetSite()
+	siteChan, sitesNum := site.GetSite(sliced, slicedStart, slicedEnd)
 	progress.Label = fmt.Sprintf("%v | %v", 0, sitesNum)
 
 	go func() {

@@ -16,7 +16,7 @@ func init() {
 
 var RWMutexChan = make(chan int, 1)
 
-func GetSite() (<-chan []string, int) {
+func GetSite(sliced bool, start int, end int) (<-chan []string, int) {
 	siteChan := make(chan []string, 1)
 
 	siteList, err := os.Open("top-1m.csv")
@@ -31,6 +31,9 @@ func GetSite() (<-chan []string, int) {
 
 	siteListCSVReader := csv.NewReader(siteList)
 	allContent, err := siteListCSVReader.ReadAll()
+	if sliced {
+		allContent = allContent[start:end]
+	}
 	if err != nil {
 		log.Fatalln(err)
 	}
