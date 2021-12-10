@@ -90,26 +90,24 @@ func main() {
 		}
 	}()
 
-	for {
+	for topSite := range siteChan {
 		select {
-		case topSite, ok := <-siteChan:
-			if ok {
-				siteScannedCounter += 1
-				siteRefreshChan <- topSite[1]
-				browser.StartScan(topSite[0], topSite[1], reminderChan, errorChan)
-			} else {
-				close(errorChan)
-				close(reminderChan)
-				close(siteRefreshChan)
-				return
-			}
 		case e := <-uiEvent:
 			switch e.ID {
 			case "<C-c>":
 				return
 			}
+		default:
+			siteScannedCounter += 1
+			siteRefreshChan <- topSite[1]
+			browser.StartScan(topSite[0], topSite[1], reminderChan, errorChan)
 		}
 	}
+
+	close(errorChan)
+	close(reminderChan)
+	close(siteRefreshChan)
+	return
 }
 
 type Pair struct {
